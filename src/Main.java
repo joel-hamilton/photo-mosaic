@@ -1,5 +1,4 @@
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -12,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Joel on 2016-02-20.
