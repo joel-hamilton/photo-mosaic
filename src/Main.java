@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Created by Joel on 2016-02-20.
  */
-public class Test {
+public class Main {
     private JPanel mainPanel;
     private JButton selectDirButton;
     private JButton selectImgButton;
@@ -33,10 +33,10 @@ public class Test {
     private int pixelSize;
 
     public static void main(String[] args) {
-        new Test();
+        new Main();
     }
 
-    public Test() {
+    public Main() {
         javax.swing.SwingUtilities.invokeLater(() -> createAndShowGUI());
     }
 
