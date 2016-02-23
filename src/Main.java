@@ -50,11 +50,14 @@ public class Main {
         makeButton.addActionListener(new MakeButtonListener());
         imgSliderLabel.setText(Integer.toString(imgSlider.getValue()));
         pixelSliderLabel.setText(Integer.toString(pixelSlider.getValue()));
+        imgSliderLabel.setText(Integer.toString(imgSlider.getValue()) + "px");
+        pixelSliderLabel.setText(Integer.toString(pixelSlider.getValue()) + "px");
+
         imgSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                imgSliderLabel.setText(Integer.toString(source.getValue()));
+                imgSliderLabel.setText(Integer.toString(source.getValue()) + "px");
             }
         });
         selectDirButton.setEnabled(false);
@@ -62,7 +65,7 @@ public class Main {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                pixelSliderLabel.setText(Integer.toString(source.getValue()));
+                pixelSliderLabel.setText(Integer.toString(source.getValue()) + "px");
             }
         });
         selectDirButton.setEnabled(false);

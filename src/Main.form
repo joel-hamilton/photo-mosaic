@@ -101,6 +101,19 @@
           <text value=""/>
         </properties>
       </component>
+      <component id="e5a31" class="javax.swing.JSlider" binding="imgSlider">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <majorTickSpacing value="100"/>
+          <maximum value="5000"/>
+          <minimum value="500"/>
+          <paintTicks value="true"/>
+          <snapToTicks value="true"/>
+          <value value="1000"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>

@@ -31,6 +31,13 @@ public class ImageTools {
         return image;
     }
 
+    /**
+     *
+     * @param image original image
+     * @param x long side, in pixels
+     * @return resized image, maintains aspect ratio
+     *
+     */
     public static BufferedImage resizeImage(BufferedImage image, int x){
         int y;
         double ratio;
@@ -43,6 +50,25 @@ public class ImageTools {
 
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2.drawImage(scaled, 0, 0, x, y, null);
+        g2.dispose();
+        return smallImage;
+    }
+
+    /**
+     *
+     * @param image original image
+     * @param x side length
+     * @return resized image, scaled square
+     */
+    public static BufferedImage resizeSquare(BufferedImage image, int x){
+        double ratio;
+
+        Image scaled = image.getScaledInstance(x, x, Image.SCALE_AREA_AVERAGING);
+        BufferedImage smallImage = new BufferedImage(scaled.getWidth(null), scaled.getHeight(null), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = smallImage.createGraphics();
+
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2.drawImage(scaled, 0, 0, x, x, null);
         g2.dispose();
         return smallImage;
     }
@@ -113,7 +139,7 @@ public class ImageTools {
      *
      * @param dirPath directory
      * @param size resize size
-     * @return ArrayList of all JPG images in a given directory (resized)
+     * @return ArrayList of all JPG images in a given directory (iscluding subdirectories) (resized)
      */
     public static ArrayList makeImageArray(Path dirPath, int size){
         ArrayList imageList = new ArrayList<>();
@@ -125,7 +151,7 @@ public class ImageTools {
                     File file = filePath.toFile();
                     try {
                         BufferedImage image = ImageIO.read(file);
-                        image = resizeImage(image, size);
+                        image = resizeSquare(image, size);
                         imageList.add(image);
                     }
                     catch(Exception e){
