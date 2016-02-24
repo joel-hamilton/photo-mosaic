@@ -113,6 +113,11 @@ public class ImageTools {
         return colorList;
     }
 
+    /**
+     *
+     * @param image image to get color from
+     * @return Color average color, based on random selection of int "sampleSize" pixels
+     */
     public static Color getAvColor(BufferedImage image){
         int reds = 0;
         int greens = 0;
@@ -185,7 +190,7 @@ public class ImageTools {
     /**
      *
      * @param list source images
-     * @return color array for the images in "list"
+     * @return average Color array for the images in "list"
      */
     public static Color[] getColorArray(ArrayList<BufferedImage> list){
         Color[] colorArray = new Color[list.size()];

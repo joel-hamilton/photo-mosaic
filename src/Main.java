@@ -39,7 +39,7 @@ public class Main {
     }
 
     private void createAndShowGUI(){
-        JFrame frame = new JFrame("Test");
+        JFrame frame = new JFrame("Image Mosaic");
         frame.setContentPane(mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
@@ -81,8 +81,6 @@ public class Main {
         chooser.setCurrentDirectory(dir);
         int returnVal = chooser.showOpenDialog(parent);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-            System.out.println("You chose to open this file: " +
-                    chooser.getSelectedFile().getName());
             originalImg = ImageTools.convertFileToImage(chooser.getSelectedFile());
             selectDirButton.setEnabled(true);
         }
@@ -117,7 +115,7 @@ public class Main {
 
             //make mosaic
             mosaicList = ImageTools.createCompositeArray(avColorArray, pixelImgArray);
-            displayImage(mosaicList);
+            showDialog(mosaicList);
         }
     }
 
@@ -125,7 +123,38 @@ public class Main {
      * creates JPG from image ArrayList and displays it in the system's default viewer
      * @param mosaicList image ArrayList
      */
-    private void displayImage(ArrayList mosaicList){
+    private void showDialog(ArrayList mosaicList){
+        Object[] options = {"Save",
+                "Open",
+                "Cancel"};
+        int n = JOptionPane.showOptionDialog(mainPanel,
+                "Save or open image?",
+                "All done",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[2]);
+        switch(n){
+            case 0:
+                saveImage(mosaicList);
+                break;
+            case 1:
+                openImage(mosaicList);
+                break;
+            case 2://// TODO: 2016-02-23 close dialog gracefully 
+                break;
+            default:
+                new Error("no selection made");
+        }
+        
+    }
+
+    /**
+     * opens image in default JPG viewer
+     * @param mosaicList
+     */
+    private void openImage(ArrayList mosaicList) {//TODO can't open this temp file until virtual machine exits
         BufferedImage mosaic = new BufferedImage(originalResized.getWidth(), originalResized.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = mosaic.createGraphics();
         File temp = null;
@@ -142,19 +171,59 @@ public class Main {
             g2.drawImage((BufferedImage)mosaicList.get(i), xPos, yPos, null);
         }
         try {
-            //temp = File.createTempFile("ImgMosaicTemp", ".jpg", new File(System.getProperty("user.home")));
-            temp = new File(System.getProperty("user.home")+ "/image.jpg");
-//            ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
+            temp = File.createTempFile("ImgMosaicTemp", ".jpg", new File(System.getProperty("user.home")));
             FileImageOutputStream output = new FileImageOutputStream(temp);
-//            writer.setOutput(output);
-//            writer.write(mosaic);
             ImageIO.write(mosaic, "jpg", output);
-//            Desktop.getDesktop().open(temp);
+            Desktop.getDesktop().open(temp);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             g2.dispose();
             temp.deleteOnExit();
+        }
+    }
+
+    /**
+     * pulls up save dialog, after Mosaic created
+     * @param mosaicList
+     */
+    private void saveImage(ArrayList mosaicList) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Specify a file to save");
+        File fileToSave = null;
+
+        int userSelection = fileChooser.showSaveDialog(mainPanel);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            fileToSave = fileChooser.getSelectedFile();
+            if (!fileToSave.toString().endsWith(".jpg")) {
+                System.out.println("doesn't end with jpg");
+                fileToSave = new File(fileToSave.toString() + ".jpg");
+            }
+        }
+
+        BufferedImage mosaic = new BufferedImage(originalResized.getWidth(), originalResized.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = mosaic.createGraphics();
+        File temp = null;
+
+        int xPos = 0;
+        int yPos = 0;
+        for(int i=0;i<mosaicList.size();i++){
+            if (i!=0)
+                xPos += pixelSize;
+            if(i != 0 && i % (originalResized.getWidth()/pixelSize) == 0){
+                yPos += pixelSize;
+                xPos = 0;
+            }
+            g2.drawImage((BufferedImage)mosaicList.get(i), xPos, yPos, null);
+        }
+        try {
+            FileImageOutputStream output = new FileImageOutputStream(fileToSave);
+            ImageIO.write(mosaic, "jpg", output);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            g2.dispose();
         }
     }
 }
