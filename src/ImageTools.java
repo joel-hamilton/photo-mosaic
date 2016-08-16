@@ -1,9 +1,11 @@
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -148,10 +150,10 @@ public class ImageTools {
      */
     public static ArrayList makeImageArray(Path dirPath, int size){
         ArrayList imageList = new ArrayList<>();
-
         try{
             Files.walk(dirPath).forEach(filePath -> {
                 String fileString = filePath.toString();
+                //only grab JPEG images
                 if (Files.isRegularFile(filePath) && (fileString.endsWith("jpg") || (fileString.endsWith("jpeg")))) {
                     File file = filePath.toFile();
                     try {
@@ -164,9 +166,16 @@ public class ImageTools {
                     }
                 }
             });
+            Main.getInstance().getProgressBar().setVisible(true);
+        }
+        catch(NoSuchFileException e){
+            JOptionPane.showMessageDialog(Main.getInstance().getMainPanel(), "Sorry, no sample images found.");
+            return null;
         }
         catch(IOException e){
             e.printStackTrace();
+            JOptionPane.showMessageDialog(Main.getInstance().getMainPanel(), "Something went wrong!");
+            return null;
         }
         return imageList;
     }

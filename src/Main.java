@@ -9,8 +9,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
+
 
 /**
  * Created by Joel on 2016-02-20.
@@ -21,20 +24,27 @@ public class Main {
     private JButton selectImgButton;
     private JSlider pixelSlider;
     private JLabel pixelSliderLabel;
-    private JButton makeButton;
     private JLabel imgSliderLabel;
     private JSlider imgSlider;
+    private JButton sampleImagesButton;
+    private JProgressBar progressBar1;
     private BufferedImage originalImg;
     private Path dirPath;
     private BufferedImage originalResized;
     private ArrayList mosaicList;
     private int pixelSize;
 
+    private static Main instance = null;
+
     public static void main(String[] args) {
-        new Main();
+        instance = new Main();
     }
 
-    public Main() {
+    public static Main getInstance(){
+        return instance;
+    }
+
+    private Main() {
         javax.swing.SwingUtilities.invokeLater(() -> createAndShowGUI());
     }
 
@@ -47,7 +57,7 @@ public class Main {
 
         selectImgButton.addActionListener(e -> selectImg(mainPanel));
         selectDirButton.addActionListener(e -> selectDirectory(mainPanel));
-        makeButton.addActionListener(new MakeButtonListener());
+        sampleImagesButton.addActionListener(e -> selectDefaultDirectory(mainPanel));
         imgSliderLabel.setText(Integer.toString(imgSlider.getValue()));
         pixelSliderLabel.setText(Integer.toString(pixelSlider.getValue()));
         imgSliderLabel.setText(Integer.toString(imgSlider.getValue()) + "px");
@@ -60,7 +70,6 @@ public class Main {
                 imgSliderLabel.setText(Integer.toString(source.getValue()) + "px");
             }
         });
-        selectDirButton.setEnabled(false);
         pixelSlider.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -68,8 +77,6 @@ public class Main {
                 pixelSliderLabel.setText(Integer.toString(source.getValue()) + "px");
             }
         });
-        selectDirButton.setEnabled(false);
-        makeButton.setEnabled(false);
     }
 
     private void selectImg(Component parent) {
@@ -83,6 +90,10 @@ public class Main {
         if(returnVal == JFileChooser.APPROVE_OPTION) {
             originalImg = ImageTools.convertFileToImage(chooser.getSelectedFile());
             selectDirButton.setEnabled(true);
+            sampleImagesButton.setEnabled(true);
+            progressBar1.setValue(0);
+            progressBar1.setVisible(false);
+
         }
     }
 
@@ -95,28 +106,50 @@ public class Main {
         int returnVal = chooser.showOpenDialog(parent);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
             dirPath = chooser.getSelectedFile().toPath();
-            makeButton.setEnabled(true);
+            Thread t = new Thread() {
+                public void run() {
+                    makeMosaic();
+                }
+            };
+            t.start();
         }
+        progressBar1.setVisible(true);
+    }
+    private void selectDefaultDirectory(Component parent) {
+            dirPath = new File("sample_images").toPath();
+        System.out.println(dirPath);
+        Thread t = new Thread() {
+            public void run() {
+                makeMosaic();
+            }
+        };
+        t.start();
     }
 
-    private class MakeButtonListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            pixelSize = pixelSlider.getValue();
-            int imgSize = imgSlider.getValue();
+    private void makeMosaic(){
+        pixelSize = pixelSlider.getValue();
+        int imgSize = imgSlider.getValue();
 
-            //make array of all images in selected directory
-            ArrayList pixelImgArray = ImageTools.makeImageArray(dirPath, pixelSize);
-
-            //make array of color info from original image
-            originalResized = ImageTools.resizeImage(originalImg, imgSize);
-            BufferedImage[] originalImgArray  = ImageTools.makeOriginalImgArray(pixelSize, pixelSize, originalResized);
-            ArrayList avColorArray = ImageTools.makeAvColorArray(originalImgArray);
-
-            //make mosaic
-            mosaicList = ImageTools.createCompositeArray(avColorArray, pixelImgArray);
-            showDialog(mosaicList);
+        //make array of all images in selected directory
+        ArrayList pixelImgArray = ImageTools.makeImageArray(dirPath, pixelSize);
+        if (pixelImgArray == null){
+            return;
         }
+        progressBar1.setValue(10);
+        //make array of color info from original image
+        progressBar1.setValue(30);
+        originalResized = ImageTools.resizeImage(originalImg, imgSize);
+        progressBar1.setValue(50);
+        BufferedImage[] originalImgArray  = ImageTools.makeOriginalImgArray(pixelSize, pixelSize, originalResized);
+        progressBar1.setValue(70);
+        ArrayList avColorArray = ImageTools.makeAvColorArray(originalImgArray);
+
+        //make mosaic
+        progressBar1.setValue(90);
+        mosaicList = ImageTools.createCompositeArray(avColorArray, pixelImgArray);
+
+        progressBar1.setValue(100);
+        showDialog(mosaicList);
     }
 
     /**
@@ -147,7 +180,7 @@ public class Main {
             default:
                 new Error("no selection made");
         }
-        
+
     }
 
     /**
@@ -173,13 +206,18 @@ public class Main {
         try {
             temp = File.createTempFile("ImgMosaicTemp", ".jpg", new File(System.getProperty("user.home")));
             FileImageOutputStream output = new FileImageOutputStream(temp);
-            ImageIO.write(mosaic, "jpg", output);
-            Desktop.getDesktop().open(temp);
+            try {
+                ImageIO.write(mosaic, "jpg", output);
+                Desktop.getDesktop().open(temp);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                output.close();
+                g2.dispose();
+                temp.deleteOnExit();
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            g2.dispose();
-            temp.deleteOnExit();
         }
     }
 
@@ -217,13 +255,25 @@ public class Main {
             }
             g2.drawImage((BufferedImage)mosaicList.get(i), xPos, yPos, null);
         }
-        try {
+        try{
             FileImageOutputStream output = new FileImageOutputStream(fileToSave);
-            ImageIO.write(mosaic, "jpg", output);
+            try {
+                ImageIO.write(mosaic, "jpg", output);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                output.close();
+                g2.dispose();
+            }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            g2.dispose();
         }
+    }
+
+    public JProgressBar getProgressBar(){
+        return progressBar1;
+    }
+    public JPanel getMainPanel(){
+        return mainPanel;
     }
 }
