@@ -11,6 +11,7 @@ import java.util.*;
 
 /**
  * Created by Joel on 2016-02-20.
+ * Static methods for image manipulation
  */
 public class ImageTools {
 

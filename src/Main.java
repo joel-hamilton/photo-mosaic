@@ -175,7 +175,7 @@ public class Main {
             case 1:
                 openImage(mosaicList);
                 break;
-            case 2://// TODO: 2016-02-23 close dialog gracefully 
+            case 2:
                 break;
             default:
                 new Error("no selection made");
@@ -187,7 +187,7 @@ public class Main {
      * opens image in default JPG viewer
      * @param mosaicList
      */
-    private void openImage(ArrayList mosaicList) {//TODO can't open this temp file until virtual machine exits
+    private void openImage(ArrayList mosaicList) {
         BufferedImage mosaic = new BufferedImage(originalResized.getWidth(), originalResized.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = mosaic.createGraphics();
         File temp = null;
